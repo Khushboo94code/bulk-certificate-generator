@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bulk Certificate Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0f1221;
+    --bg-soft: #151a30;
+    --panel: #ffffff;
+    --ink: #1a1f36;
+    --muted: #6b7280;
+    --line: #e7eaf3;
+    --brand: #4f46e5;
+    --brand-2: #7c3aed;
+    --brand-ink: #312e81;
+    --green: #16a34a;
+    --green-bg: #e9f8ef;
+    --red: #dc2626;
+    --red-bg: #fdecec;
+    --amber: #b45309;
+    --amber-bg: #fdf3e2;
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(16, 20, 50, .08);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(124,58,237,.25), transparent 60%),
+      radial-gradient(1000px 500px at -10% 0%, rgba(79,70,229,.25), transparent 55%),
+      var(--bg);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 40px 20px 110px;
+    text-align: center;
+    color: #fff;
+  }
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .3px;
+    backdrop-filter: blur(6px);
+  }
+  header h1 {
+    margin: 18px 0 6px;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+  }
+  header p { margin: 0; font-size: 15px; color: rgba(255,255,255,.72); }
+
+  main {
+    max-width: 1060px;
+    margin: -80px auto 60px;
+    padding: 0 20px;
+    display: grid;
+    gap: 22px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 22px;
+  }
+  @media (max-width: 820px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255,255,255,.6);
+  }
+  .card h2 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .card .sub { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
+
+  label { display: block; font-size: 12.5px; font-weight: 600; color: #374151; margin: 14px 0 6px; }
+  input[type=text], input[type=date], textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    background: #fbfbfe;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(79,70,229,.12);
+  }
+  textarea { min-height: 150px; resize: vertical; line-height: 1.5; font-family: "SFMono-Regular", ui-monospace, Menlo, monospace; font-size: 13px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 160px; }
+
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: transform .06s ease, box-shadow .15s, opacity .15s;
+  }
+  button:active { transform: translateY(1px); }
+  .btn-primary {
+    margin-top: 20px;
+    width: 100%;
+    color: #fff;
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    box-shadow: 0 8px 18px rgba(79,70,229,.35);
+  }
+  .btn-primary:hover { box-shadow: 0 10px 22px rgba(79,70,229,.45); }
+  .btn-ghost {
+    background: #f3f4ff;
+    color: var(--brand-ink);
+    white-space: nowrap;
+  }
+  .btn-ghost:hover { background: #e9e9ff; }
+  button:disabled { opacity: .55; cursor: default; box-shadow: none; }
+
+  .inline { display: flex; gap: 10px; align-items: flex-end; }
+  .inline > div { flex: 1; }
+  .inline label { margin-top: 0; }
+
+  /* status pills */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .s-success, .s-completed { color: var(--green); background: var(--green-bg); }
+  .s-failed { color: var(--red); background: var(--red-bg); }
+  .s-pending, .s-processing, .s-completed_with_errors { color: var(--amber); background: var(--amber-bg); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0 14px; }
+  .stat {
+    background: #f8f9ff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .stat b { display: block; font-size: 26px; font-weight: 800; line-height: 1; }
+  .stat span { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .stat.ok b { color: var(--green); }
+  .stat.bad b { color: var(--red); }
+  .stat.wait b { color: var(--amber); }
+
+  .progress-wrap { margin: 6px 0 4px; }
+  .progress {
+    height: 12px;
+    background: #eef0f8;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress > span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--brand), var(--brand-2));
+    width: 0%;
+    transition: width .35s ease;
+  }
+  .progress-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13.5px; }
+  thead th {
+    text-align: left; padding: 10px 12px;
+    color: var(--muted); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .5px;
+    border-bottom: 1.5px solid var(--line);
+  }
+  tbody td { padding: 12px; border-bottom: 1px solid #f1f2f8; vertical-align: middle; }
+  tbody tr:hover { background: #fafbff; }
+  td .rname { font-weight: 600; }
+  td a.dl {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--brand); font-weight: 600; text-decoration: none;
+  }
+  td a.dl:hover { text-decoration: underline; }
+  .err { color: var(--red); font-size: 12.5px; }
+  .muted { color: var(--muted); }
+  .num { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  #error {
+    display: none;
+    margin-top: 14px;
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid #f6caca;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+  #error.show { display: block; }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 10px; font-size: 14px; }
+  .hidden { display: none; }
+  code { background: #eef0f8; padding: 2px 7px; border-radius: 6px; font-size: 12.5px; }
+  .job-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  footer { text-align: center; color: rgba(255,255,255,.4); font-size: 12px; padding: 0 0 36px; }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand-badge">◆ Certificates</span>
+  <h1>Bulk Certificate Generator</h1>
+  <p>Submit many recipients in one request · track progress live · download PDFs</p>
+</header>
+
+<main>
+  <div class="grid-2">
+    <!-- Create job -->
+    <section class="card">
+      <h2>Create a generation job</h2>
+      <p class="sub">Fill in the shared details, then add one recipient per line.</p>
+
+      <div class="row">
+        <div>
+          <label for="course">Course / Event name *</label>
+          <input id="course" type="text" value="Introduction to Machine Learning" />
+        </div>
+        <div>
+          <label for="issuer">Issuer *</label>
+          <input id="issuer" type="text" value="Acme Academy" />
+        </div>
+      </div>
+      <label for="date">Issue date</label>
+      <input id="date" type="date" />
+
+      <label for="recipients">Recipients *</label>
+      <textarea id="recipients" spellcheck="false" placeholder="Name, email@example.com">Alice Smith, alice@example.com
+Bob Jones, bob@example.com
+   , ghost@example.com
+Carol Lee, not-an-email
+David Kim</textarea>
+      <div class="hint">
+        Format: <code>Name, email</code> — one per line, email optional.<br />
+        The blank / invalid lines above are intentional, to demonstrate per-recipient failure handling.
+      </div>
+
+      <button class="btn-primary" id="submitBtn">✨ Generate certificates</button>
+      <div id="error"></div>
+    </section>
+
+    <!-- Track existing job -->
+    <section class="card" style="align-self:start">
+      <h2>Track an existing job</h2>
+      <p class="sub">Already have a job ID? Paste it to resume tracking.</p>
+      <div class="inline">
+        <div>
+          <label for="jobIdInput">Job ID</label>
+          <input id="jobIdInput" type="text" placeholder="e.g. 920a5ff8-01ca-…" />
+        </div>
+        <button class="btn-ghost" id="trackBtn">Track →</button>
+      </div>
+      <div class="hint" style="margin-top:14px">
+        Tip: the API docs are available at <code>/docs</code>.
+      </div>
+    </section>
+  </div>
+
+  <!-- Results -->
+  <section class="card" id="results">
+    <div class="job-head">
+      <h2 style="margin:0">Results</h2>
+      <span id="jobIdLabel" class="muted" style="font-size:13px"></span>
+      <span id="jobStatus" class="pill hidden"></span>
+    </div>
+    <p class="sub" id="jobMeta" style="margin-top:8px"></p>
+
+    <div id="emptyState" class="empty">No job yet — create one above to see live progress here.</div>
+
+    <div id="jobBody" class="hidden">
+      <div class="stats">
+        <div class="stat"><b id="stTotal">0</b><span>Total</span></div>
+        <div class="stat ok"><b id="stSuccess">0</b><span>Succeeded</span></div>
+        <div class="stat bad"><b id="stFailed">0</b><span>Failed</span></div>
+        <div class="stat wait"><b id="stPending">0</b><span>Pending</span></div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress"><span id="bar"></span></div>
+        <div class="progress-label" id="progressLabel">0% processed</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th style="width:44px">#</th><th>Recipient</th><th>Email</th><th>Status</th><th>Certificate / Error</th></tr>
+        </thead>
+        <tbody id="certRows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>Bulk Certificate Generator · FastAPI + ReportLab</footer>
+
+<script>
+const API = ""; // same origin
+let pollTimer = null;
+
+document.getElementById("date").value = new Date().toISOString().slice(0, 10);
+
+function parseRecipients(text) {
+  // Each non-empty line -> {name, email?}. Blank-name lines are deliberately
+  // kept so the backend records them as failed (demonstrates validation).
+  return text.split("\n")
+    .filter(line => line.trim().length > 0 || line.includes(","))
+    .map(line => {
+      const [name, email] = line.split(",");
+      const r = { name: (name ?? "").trim() };
+      if (email && email.trim()) r.email = email.trim();
+      return r;
+    });
+}
+
+function showError(msg) {
+  const el = document.getElementById("error");
+  el.textContent = msg;
+  el.classList.toggle("show", !!msg);
+}
+
+async function createJob() {
+  const btn = document.getElementById("submitBtn");
+  showError("");
+
+  const payload = {
+    course_name: document.getElementById("course").value,
+    issuer: document.getElementById("issuer").value,
+    recipients: parseRecipients(document.getElementById("recipients").value),
+  };
+  const date = document.getElementById("date").value;
+  if (date) payload.issue_date = date;
+
+  btn.disabled = true;
+  btn.textContent = "Submitting…";
+  try {
+    const res = await fetch(API + "/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error("Request rejected (HTTP " + res.status + "):\n" +
+        JSON.stringify(body.detail ?? body, null, 2));
+    }
+    const job = await res.json();
+    document.getElementById("jobIdInput").value = job.id;
+    startTracking(job.id);
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✨ Generate certificates";
+  }
+}
+
+function startTracking(jobId) {
+  if (pollTimer) clearInterval(pollTimer);
+  document.getElementById("emptyState").classList.add("hidden");
+  document.getElementById("jobBody").classList.remove("hidden");
+  document.getElementById("jobIdLabel").textContent = "#" + jobId;
+  document.getElementById("results").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  const poll = () => refreshJob(jobId);
+  poll();
+  pollTimer = setInterval(poll, 800);
+}
+
+async function refreshJob(jobId) {
+  let res;
+  try { res = await fetch(API + "/jobs/" + jobId); }
+  catch { return; }
+  if (!res.ok) {
+    if (pollTimer) clearInterval(pollTimer);
+    showError("Job not found: " + jobId);
+    return;
+  }
+  const job = await res.json();
+  render(job);
+  if (["completed", "completed_with_errors", "failed"].includes(job.status) && pollTimer) {
+    clearInterval(pollTimer); pollTimer = null;
+  }
+}
+
+function pill(status) {
+  return '<span class="pill s-' + status + '">' + status.replace(/_/g, " ") + "</span>";
+}
+
+function render(job) {
+  const statusEl = document.getElementById("jobStatus");
+  statusEl.className = "pill s-" + job.status;
+  statusEl.textContent = job.status.replace(/_/g, " ");
+
+  document.getElementById("jobMeta").textContent =
+    job.course_name + "  ·  issued by " + job.issuer + "  ·  " + job.issue_date;
+
+  document.getElementById("stTotal").textContent = job.total;
+  document.getElementById("stSuccess").textContent = job.succeeded;
+  document.getElementById("stFailed").textContent = job.failed;
+  document.getElementById("stPending").textContent = job.pending;
+
+  const processed = job.succeeded + job.failed;
+  const pct = job.total ? Math.round((processed / job.total) * 100) : 0;
+  document.getElementById("bar").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent =
+    pct + "% processed  (" + processed + " / " + job.total + ")";
+
+  const rows = (job.certificates || []).map(c => {
+    let action;
+    if (c.status === "success") {
+      action = '<a class="dl" href="' + API + "/certificates/" + c.id + '/download">⬇ Download PDF</a>';
+    } else if (c.status === "failed") {
+      action = '<span class="err">' + escapeHtml(c.error_message || "failed") + "</span>";
+    } else {
+      action = '<span class="muted">—</span>';
+    }
+    return "<tr>" +
+      '<td class="num">' + (c.row_index + 1) + "</td>" +
+      '<td class="rname">' + (escapeHtml(c.recipient_name).trim() || '<span class="muted">(blank)</span>') + "</td>" +
+      '<td class="muted">' + escapeHtml(c.recipient_email || "—") + "</td>" +
+      "<td>" + pill(c.status) + "</td>" +
+      "<td>" + action + "</td></tr>";
+  }).join("");
+  document.getElementById("certRows").innerHTML = rows;
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
+
+document.getElementById("submitBtn").addEventListener("click", createJob);
+document.getElementById("trackBtn").addEventListener("click", () => {
+  const id = document.getElementById("jobIdInput").value.trim();
+  if (id) startTracking(id);
+});
+document.getElementById("jobIdInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("trackBtn").click();
+});
+</script>
+</body>
+</html>
